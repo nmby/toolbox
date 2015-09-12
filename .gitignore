@@ -5,6 +5,7 @@
 
 # Package Files #
 *.jar
+!xyz.hotchpotch.*.jar
 *.war
 *.ear
 
