@@ -3,12 +3,26 @@ package xyz.hotchpotch.util.stream;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * 2つのオブジェクトのペアを表すクラスです。<br>
+ * 
+ * @param <T> オブジェクト1の型
+ * @param <U> オブジェクト2の型
+ * @author nmby
+ */
 public class Pair<T, U> implements Serializable {
     
     // ++++++++++++++++ static members ++++++++++++++++
     
     private static final long serialVersionUID = 1L;
     
+    /**
+     * {@code Pair} オブジェクトを生成します。<br>
+     * 
+     * @param m1 メンバオブジェクト1（{@code null} が許容されます）
+     * @param m2 メンバオブジェクト2（{@code null} が許容されます）
+     * @return {@code (m1, m2)} から成る {@code Pair} オブジェクト
+     */
     public static <T, U> Pair<T, U> of(T m1, U m2) {
         return new Pair<>(m1, m2);
     }
@@ -23,14 +37,27 @@ public class Pair<T, U> implements Serializable {
         this.m2 = m2;
     }
     
+    /**
+     * メンバオブジェクト1を返します。<br>
+     * 
+     * @return メンバオブジェクト1
+     */
     public T m1() {
         return m1;
     }
     
+    /**
+     * メンバオブジェクト2を返します。<br>
+     * 
+     * @return メンバオブジェクト2
+     */
     public U m2() {
         return m2;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -43,11 +70,17 @@ public class Pair<T, U> implements Serializable {
         return false;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return Objects.hash(m1, m2);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return String.format("(%s, %s)", m1, m2);
