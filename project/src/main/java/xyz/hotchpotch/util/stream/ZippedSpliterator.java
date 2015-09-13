@@ -92,10 +92,10 @@ import java.util.Spliterators;
         int concurrent;
         if ((Spliterator.CONCURRENT & c1 & c2) != 0) {
             concurrent = Spliterator.CONCURRENT;
-        } else if ((Spliterator.CONCURRENT & c1) != 0) {
-            concurrent = (Spliterator.IMMUTABLE & c2) != 0 ? Spliterator.CONCURRENT : 0;
-        } else if ((Spliterator.CONCURRENT & c2) != 0) {
-            concurrent = (Spliterator.IMMUTABLE & c1) != 0 ? Spliterator.CONCURRENT : 0;
+        } else if ((Spliterator.CONCURRENT & c1) != 0 && (Spliterator.IMMUTABLE & c2) != 0) {
+            concurrent = Spliterator.CONCURRENT;
+        } else if ((Spliterator.CONCURRENT & c2) != 0 && (Spliterator.IMMUTABLE & c1) != 0) {
+            concurrent = Spliterator.CONCURRENT;
         } else {
             concurrent = 0;
         }
