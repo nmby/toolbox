@@ -19,6 +19,8 @@ public class Pair<T, U> implements Serializable {
     /**
      * {@code Pair} オブジェクトを生成します。<br>
      * 
+     * @param <T> メンバオブジェクト1の型
+     * @param <U> メンバオブジェクト2の型
      * @param m1 メンバオブジェクト1（{@code null} が許容されます）
      * @param m2 メンバオブジェクト2（{@code null} が許容されます）
      * @return {@code (m1, m2)} から成る {@code Pair} オブジェクト

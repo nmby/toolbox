@@ -53,7 +53,7 @@ public class ZippedStream {
      * 従って、大元のソースがスレッドセーフであっても、そのソースの反復操作を行う際に手動で同期をとる必要がある場合は、
      * 生成されたストリームのストリーム・パイプラインにおける大元のソースに対する操作は、スレッドセーフにはなりません。<br>
      * 具体的な例として、次のコードでは {@code ConcurrentModificationException} がスローされて処理が失敗します。
-     * <pre>
+     * <pre>{@code
      *    List<Integer> threadSafeList = Collections.synchronizedList(new ArrayList<>(Arrays.asList(1, 2, 3)));
      *    Stream<Integer> stream1 = threadSafeList.stream();
      *    Stream<String> stream2 = Arrays.asList("a", "b", "c", "d", "e").stream();
@@ -61,7 +61,7 @@ public class ZippedStream {
      *    ZippedStream.of(stream1, stream2)
      *            .peek(p -> threadSafeList.add(p.m1() + 3))    // ここで例外が発生する。
      *            .forEach(Pair::toString);
-     * </pre>
+     * }</pre>
      * {@code threadSafeList} はスレッドセーフですが、それに対する反復処理に際しては手動で同期をとる必要があります。
      * 上の例ではそれがなされないまま {@code threadSafeList} に対する更新操作を行っているため、例外が発生します。<br>
      * 詳細は {@link Collections#synchronizedList(List)} の説明を参照してください。<br>
