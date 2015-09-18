@@ -1,7 +1,10 @@
 package xyz.hotchpotch.util.stream;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Spliterator;
+import java.util.stream.BaseStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -44,6 +47,25 @@ public class ZippedStream {
      * <br>
      * 終端操作開始後に大元のソースに対する構造的干渉が検出された場合の動作ポリシーは、ソースストリームのそれに従います。
      * すなわち、ソースストリームがフェイル・ファストであれば、生成されるストリームもフェイル・ファストになります。<br>
+     * <br>
+     * <b>注意： </b>
+     * 新たなストリームは、2つのソースストリームから {@link BaseStream#spliterator()} により得られる {@link Spliterator} を介して構築されます。
+     * 従って、大元のソースがスレッドセーフであっても、そのソースの反復操作を行う際に手動で同期をとる必要がある場合は、
+     * 生成されたストリームのストリーム・パイプラインにおける大元のソースに対する操作は、スレッドセーフにはなりません。<br>
+     * 具体的な例として、次のコードでは {@code ConcurrentModificationException} がスローされて処理が失敗します。
+     * <pre>
+     *    List<Integer> threadSafeList = Collections.synchronizedList(new ArrayList<>(Arrays.asList(1, 2, 3)));
+     *    Stream<Integer> stream1 = threadSafeList.stream();
+     *    Stream<String> stream2 = Arrays.asList("a", "b", "c", "d", "e").stream();
+     *    
+     *    ZippedStream.of(stream1, stream2)
+     *            .peek(p -> threadSafeList.add(p.m1() + 3))    // ここで例外が発生する。
+     *            .forEach(Pair::toString);
+     * </pre>
+     * {@code threadSafeList} はスレッドセーフですが、それに対する反復処理に際しては手動で同期をとる必要があります。
+     * 上の例ではそれがなされないまま {@code threadSafeList} に対する更新操作を行っているため、例外が発生します。<br>
+     * 詳細は {@link Collections#synchronizedList(List)} の説明を参照してください。<br>
+     * <br>
      * <br>
      * 生成されるストリームに対するクローズ操作は、ソースストリームに対するクローズ操作と連動しません。
      * ソースストリームが入出力チャネルをソースとする場合は、ソースストリームに対して個別にクローズ操作を行ってください。<br>

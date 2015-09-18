@@ -7,6 +7,7 @@ import static xyz.hotchpotch.jutaime.throwable.Testee.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.List;
@@ -23,7 +24,7 @@ import org.junit.Test;
 public class ZippedStreamTest {
     
     @Test
-    public void test1() {
+    public void test01() {
         // ******** 基本的な挙動の確認 ********
         
         // 基本動作
@@ -74,7 +75,7 @@ public class ZippedStreamTest {
     }
     
     @Test
-    public void test2() {
+    public void test02() {
         // ******** パラメータチェックの確認 ********
         
         // stream1 == null or stream2 == null : NullPointerException
@@ -91,7 +92,7 @@ public class ZippedStreamTest {
     }
     
     @Test
-    public void test3() {
+    public void test03() {
         // ******** 遅延バインディングの確認 ********
         
         // 終端操作開始前までのものは反映されることの確認
@@ -149,7 +150,7 @@ public class ZippedStreamTest {
     }
     
     @Test
-    public void test4() {
+    public void test04() {
         // ******** ストリームのプロパティの確認 ********
         
         // 順次／並列の確認1
@@ -172,7 +173,7 @@ public class ZippedStreamTest {
     }
     
     @Test
-    public void test5() {
+    public void test05() {
         // ******** Spliterator のプロパティの確認1 ： ORDERED 特性 ********
         
         // (false, false) -> false
@@ -221,7 +222,7 @@ public class ZippedStreamTest {
     }
     
     @Test
-    public void test6() {
+    public void test06() {
         // ******** Spliterator のプロパティの確認2 ： DISTINCT 特性 ********
         
         // (false, false) -> false
@@ -270,7 +271,7 @@ public class ZippedStreamTest {
     }
     
     @Test
-    public void test7() {
+    public void test07() {
         // ******** Spliterator のプロパティの確認3 ： SORTED 特性 ********
         
         // Pair 同士の大小関係は定義されていないため、ソースストリームがともに SORTED であっても、生成されたストリームは SORTED 特性を報告しない。
@@ -286,7 +287,7 @@ public class ZippedStreamTest {
     }
     
     @Test
-    public void test8() {
+    public void test08() {
         // ******** Spliterator のプロパティの確認4 ： SIZED 特性、SUBSIZED 特性 ********
         
         // (false, false) -> false
@@ -357,7 +358,7 @@ public class ZippedStreamTest {
     }
     
     @Test
-    public void test9() {
+    public void test09() {
         // ******** Spliterator のプロパティの確認5 ： NONNULL 特性 ********
         
         // ソースストリームが null 要素を含むとしても、生成されたストリームは常に Pair インスタンスを返すため、常に NONNULL 特性を報告する。
@@ -524,6 +525,44 @@ public class ZippedStreamTest {
     
     @Test
     public void test12() {
+        // ******** 大元のソースデータを共有する場合も正常に動くことの確認 ********
+        
+        // 読み取るだけの場合
+        List<String> source1 = Arrays.asList("a", "b", "c");
+        
+        assertThat(
+                ZippedStream.of(source1.stream(), source1.stream())
+                .map(Pair::toString)
+                .collect(Collectors.joining(", ")),
+                is("(a, a), (b, b), (c, c)"));
+        
+        // 更新を伴う場合1
+        Set<Integer> source2 = new ConcurrentSkipListSet<>(Arrays.asList(1, 2, 3));
+        
+        assertThat(
+                ZippedStream.of(source2.stream(), source2.stream().skip(1))
+                .peek(p -> source2.add(p.m1() + p.m2() * 2))
+                .map(p -> p.m1().toString())
+                .limit(10)
+                .collect(Collectors.joining(", ")),
+                is("1, 2, 3, 5, 8, 13, 21, 34, 55, 89"));
+        
+        // 更新を伴う場合2 ： 手動同期が必要な iterator を介すため、これはダメ
+        // これはこのクラスの問題ではなく、Collections#synchronizedList が返す iterator が手動同期を必要とすることが原因。
+        // -> ちょっと微妙な事象なので、javadoc に注意事項を明記することとした。
+        List<Integer> source3 = Collections.synchronizedList(new ArrayList<>(Arrays.asList(1, 2, 3)));
+        
+        assertThat(of(() -> {
+                ZippedStream.of(source3.stream(), source3.stream().skip(1))
+                .peek(p -> source3.add(p.m1() + p.m2() * 2))
+                .map(p -> p.m1().toString())
+                .limit(10)
+                .collect(Collectors.joining(", ")); }),
+                raise(ConcurrentModificationException.class));
+    }
+    
+    @Test
+    public void test99() {
         // ******** その他の検証 ********
         
         // ZippedStream#of の実行によりソースストリームが再利用不可になることの確認
